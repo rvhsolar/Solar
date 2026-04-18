@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solar</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--bg:#0A0A0A;--bg2:#111;--bg3:#181818;--bg4:#202020;--line:rgba(255,255,255,0.06);--line2:rgba(255,255,255,0.12);--text:#EDE9E3;--text2:#6E6A64;--text3:#3A3835;--gold:#C9963A;--gold2:rgba(201,150,58,0.1);--hot:#B03A2E;--warm:#B5540C;--cold:#1A5276;--conf:#1A6B3A;--fup:#4A2080;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;overflow:hidden;}
+.app{display:flex;height:100dvh;}
+/* SIDEBAR */
+.sb{width:196px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;}
+.sb-logo{padding:16px 16px 12px;border-bottom:1px solid var(--line);}
+.sb-logo-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:5px;text-transform:uppercase;color:var(--text);}
+.sb-logo-title span{color:var(--gold);}
+.sb-logo-sub{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:3px;}
+.sb-weather{padding:10px 16px;border-bottom:1px solid var(--line);}
+.sb-weather-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--text);line-height:1;}
+.sb-weather-desc{font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-top:2px;}
+.sb-stats{padding:12px 16px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sb-stat{cursor:pointer;}
+.sb-stat-val{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;letter-spacing:-1px;color:var(--text);line-height:1;}
+.sb-stat-val.g{color:var(--gold);}
+.sb-stat-lbl{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:2px;}
+.sb-quote{padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;}
+.sb-quote-text{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--text2);line-height:1.55;}
+.sb-quote-attr{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:4px;}
+.sb-nav{flex:1;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{display:none;}
+.ni{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;cursor:pointer;color:var(--text2);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-left:2px solid transparent;transition:all .14s;}
+.ni.on{color:var(--text);border-left-color:var(--gold);background:rgba(201,150,58,0.06);}
+.ni-badge{font-size:7px;background:var(--bg3);color:var(--text3);padding:2px 6px;border-radius:2px;}
+.ni.on .ni-badge{background:var(--gold2);color:var(--gold);}
+.sb-bottom{padding:12px 16px;border-top:1px solid var(--line);}
+.sb-date{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);line-height:1.7;}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:46px;flex-shrink:0;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:8px;}
+.topbar-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:300;letter-spacing:3px;text-transform:uppercase;color:var(--text2);flex:1;}
+.tbtn{padding:6px 14px;border-radius:2px;border:1px solid var(--line2);cursor:pointer;font-family:'DM Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;background:transparent;color:var(--text2);transition:all .14s;}
+.tbtn.gold{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+.page{flex:1;overflow-y:auto;overflow-x:hidden;}
+.page::-webkit-scrollbar{width:3px;}
+.page::-webkit-scrollbar-thumb{background:var(--bg4);}
+/* CARDS */
+.card{margin:14px 16px 0;border:1px solid var(--line);border-radius:2px;background:var(--bg2);padding:14px 16px;}
+.card-lbl{font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);}
+/* TICKER PAGE */
+.ticker-shell{display:grid;grid-template-columns:196px 1fr;height:100%;overflow:hidden;}
+.ticker-left{border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--bg2);}
+.ticker-hdr{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.ticker-rows{flex:1;overflow-y:auto;}
+.ticker-row{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);}
+.ticker-lbl{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:3px;}
+.ticker-val{font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:300;letter-spacing:-3px;color:var(--text);line-height:1;}
+.ticker-btns{display:flex;flex-direction:column;gap:4px;margin-left:auto;}
+.tbtn2{width:34px;height:34px;border-radius:2px;border:1px solid var(--line2);background:var(--bg3);color:var(--text);cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:20px;display:flex;align-items:center;justify-content:center;user-select:none;}
+.tbtn2:active{background:var(--gold);border-color:var(--gold);color:var(--bg);}
+.ticker-foot{padding:10px 14px;border-top:1px solid var(--line);}
+.save-log-btn{width:100%;padding:8px;background:var(--gold);color:var(--bg);border:none;border-radius:2px;cursor:pointer;font-family:'DM Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;}
+/* LEADS */
+.leads-right{display:flex;flex-direction:column;overflow:hidden;}
+.leads-tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;flex-shrink:0;}
+.leads-tabs::-webkit-scrollbar{display:none;}
+.ltab{padding:9px 10px;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0;}
+.ltab.on{color:var(--gold);border-bottom-color:var(--gold);}
+.filter-row{padding:8px 10px;border-bottom:1px solid var(--line);display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;}
+.fp{padding:3px 8px;border:1px solid var(--line);border-radius:2px;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);cursor:pointer;}
+.fp.on{color:var(--gold);border-color:rgba(201,150,58,0.3);background:var(--gold2);}
+.leads-body{flex:1;display:grid;grid-template-columns:196px 1fr;overflow:hidden;}
+.lead-list{border-right:1px solid var(--line);overflow-y:auto;background:var(--bg2);display:flex;flex-direction:column;}
+.lead-list::-webkit-scrollbar{display:none;}
+.lli{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;border-left:2px solid transparent;}
+.lli.on{background:var(--bg3);}
+.lli-name{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lli-sub{font-size:7px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lli-st{font-size:7px;letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.lead-detail{overflow-y:auto;padding:18px 20px;}
+.lead-detail::-webkit-scrollbar{width:3px;}
+.lead-detail::-webkit-scrollbar-thumb{background:var(--bg4);}
+.ld-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--text);margin-bottom:3px;}
+.ld-date{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+.ld-badge{display:inline-block;font-size:7px;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:2px;border:1px solid;margin-bottom:14px;}
+.ld-sec{margin-bottom:11px;}
+.ld-sec-lbl{font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--line);}
+.ld-val{font-size:13px;color:var(--text);line-height:1.6;}
+.ld-val.phone{font-size:17px;color:var(--gold);}
+.ld-notes{font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:var(--text2);line-height:1.75;}
+.ld-map{width:100%;height:180px;border:1px solid var(--line);border-radius:2px;margin-top:6px;}
+.ld-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);}
+.ld-btn{padding:6px 14px;border-radius:2px;border:1px solid var(--line2);cursor:pointer;font-family:'DM Mono',monospace;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;background:transparent;color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;}
+.ld-btn.maps{background:#1A73E8;color:#fff;border-color:#1A73E8;}
+.ld-btn.del{color:var(--hot);border-color:rgba(176,58,46,0.3);}
+.add-lead-bar{padding:8px 10px;border-top:1px solid var(--line);margin-top:auto;}
+.add-lead-btn{width:100%;padding:8px;border:1px dashed var(--line2);border-radius:2px;background:transparent;color:var(--gold);cursor:pointer;font-family:'DM Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;}
+/* CALENDAR */
+.cal-wrap{padding:16px 16px 40px;overflow-y:auto;height:100%;}
+.cal-wrap::-webkit-scrollbar{width:3px;}
+.cal-wrap::-webkit-scrollbar-thumb{background:var(--bg4);}
+.cal-goals-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;}
+.cal-goal-cell{background:var(--bg2);border:1px solid var(--line);border-radius:2px;padding:10px;}
+.cal-goal-lbl{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.cal-goal-inp{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line2);color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;padding:3px 0;outline:none;letter-spacing:-1px;}
+.cal-goal-inp::placeholder{color:var(--text3);font-size:14px;}
+.cal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.cal-month{background:var(--bg2);border:1px solid var(--line);border-radius:2px;padding:10px;}
+.cal-month-name{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:3px;}
+.cal-dow-lbl{font-size:6px;color:var(--text3);text-align:center;}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:8px;color:var(--text3);border-radius:2px;cursor:default;position:relative;}
+.cal-day.has{color:var(--text);cursor:pointer;background:var(--bg3);}
+.cal-day.today{color:var(--gold);font-weight:600;}
+.cal-day.sel{background:var(--gold2);}
+.cal-dot{width:3px;height:3px;border-radius:50%;background:var(--gold);position:absolute;bottom:1px;}
+.cal-detail-card{background:var(--bg2);border:1px solid var(--line);border-radius:2px;padding:14px 16px;margin-bottom:16px;}
+/* APPOINTMENTS */
+.appt-shell{display:grid;grid-template-columns:196px 1fr;height:100%;overflow:hidden;}
+.appt-left{border-right:1px solid var(--line);overflow-y:auto;background:var(--bg2);}
+.appt-left::-webkit-scrollbar{display:none;}
+.appt-month-hdr{padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+.appt-month-lbl{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);}
+.appt-day-row{padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+.appt-day-row.on{background:var(--gold2);border-left:2px solid var(--gold);}
+.appt-day-lbl{font-size:11px;color:var(--text2);}
+.appt-day-lbl.on{color:var(--text);}
+.appt-badge{font-size:7px;background:var(--gold);color:var(--bg);padding:1px 5px;border-radius:2px;}
+.appt-right{display:flex;flex-direction:column;overflow:hidden;}
+.appt-right-hdr{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.appt-right-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--text);}
+.appt-slots{flex:1;overflow-y:auto;padding:10px 16px 40px;}
+.appt-slots::-webkit-scrollbar{width:3px;}
+.appt-slots::-webkit-scrollbar-thumb{background:var(--bg4);}
+.slot-row{display:flex;gap:8px;min-height:32px;margin-bottom:4px;}
+.slot-time{width:50px;font-size:7px;color:var(--text3);padding-top:6px;flex-shrink:0;}
+.slot-body{flex:1;border-top:1px solid var(--line);min-height:32px;}
+.appt-block{padding:5px 8px;border-radius:2px;margin-bottom:3px;position:relative;cursor:pointer;}
+.appt-block-name{font-family:'Cormorant Garamond',serif;font-size:13px;color:#fff;line-height:1.2;}
+.appt-block-sub{font-size:7px;color:rgba(255,255,255,0.6);margin-top:1px;}
+.appt-del{position:absolute;right:5px;top:5px;background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:11px;padding:0;}
+/* SCRIPT */
+.script-wrap{padding:20px 22px;height:100%;display:flex;flex-direction:column;}
+.script-hdr{display:flex;align-items:center;margin-bottom:14px;flex-shrink:0;}
+.script-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--text);flex:1;}
+.script-save{padding:7px 18px;background:var(--gold);color:var(--bg);border:none;border-radius:2px;cursor:pointer;font-family:'DM Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;}
+.script-ta{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:2px;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;line-height:1.9;padding:20px 22px;outline:none;resize:none;}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.87);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(5px);}
+.overlay.on{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--line2);border-radius:2px;padding:22px;width:420px;max-width:94vw;max-height:90dvh;overflow-y:auto;}
+.modal::-webkit-scrollbar{display:none;}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--text);}
+.modal-x{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
+.fg{margin-bottom:12px;}
+.fg label{display:block;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:5px;}
+.fg input,.fg textarea,.fg select{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line2);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 0;outline:none;}
+.fg textarea{resize:none;min-height:55px;line-height:1.6;}
+.fg select{background:var(--bg2);}
+.fg select option{background:var(--bg2);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mbtn{display:block;width:100%;padding:10px;border-radius:2px;border:1px solid var(--line2);cursor:pointer;font-family:'DM Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;background:transparent;color:var(--text2);}
+.mbtn.gold{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+.mbtn.ghost{border-color:var(--line);color:var(--text3);}
+.color-picks{display:flex;gap:6px;margin-top:6px;}
+.cpick{width:26px;height:26px;border-radius:2px;cursor:pointer;border:2px solid transparent;}
+.cpick.on{border-color:#fff;}
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--line2);border-radius:2px;padding:7px 16px;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);opacity:0;transition:opacity .2s;pointer-events:none;z-index:3000;}
+.toast.show{opacity:1;}
+/* HISTORY */
+.hist-day{padding:12px 14px;border-bottom:1px solid var(--line);}
+.hist-lbl{font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.hist-stats{display:flex;gap:14px;flex-wrap:wrap;}
+.hv{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--text);line-height:1;}
+.hl{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sb">
+    <div class="sb-logo">
+      <div class="sb-logo-title">S<span>olar</span></div>
+      <div class="sb-logo-sub">Robby — Field Journal</div>
+    </div>
+    <div class="sb-weather" id="sb-weather">
+      <div class="sb-weather-val">—°</div>
+      <div class="sb-weather-desc">Fetching weather...</div>
+    </div>
+    <div class="sb-stats" id="sb-stats"></div>
+    <div class="sb-quote" id="sb-quote" onclick="nextQuote()"></div>
+    <nav class="sb-nav">
+      <div class="ni on" id="ni-today" onclick="go('today')">Today</div>
+      <div class="ni" id="ni-field" onclick="go('field')"><span>Field & Leads</span><span class="ni-badge" style="color:var(--gold)">Live</span></div>
+      <div class="ni" id="ni-calendar" onclick="go('calendar')"><span>Calendar</span><span class="ni-badge">2026</span></div>
+      <div class="ni" id="ni-appt" onclick="go('appt')"><span>Appointments</span><span class="ni-badge" id="appt-badge">0</span></div>
+      <div class="ni" id="ni-script" onclick="go('script')"><span>My Script</span><span class="ni-badge">edit</span></div>
+    </nav>
+    <div class="sb-bottom"><div class="sb-date" id="sb-date"></div></div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Today</div>
+      <button class="tbtn gold" id="topbar-pri" onclick="topPri()">+ Lead</button>
+    </div>
+    <div class="page" id="page"></div>
+  </div>
+</div>
+
+<!-- LEAD MODAL -->
+
+<div class="overlay" id="lead-modal">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title" id="lead-modal-title">New Lead</div><button class="modal-x" onclick="closeModal('lead-modal')">×</button></div>
+    <input type="hidden" id="l-id">
+    <div class="fg"><label>Name</label><input id="l-name" placeholder="Full name"></div>
+    <div class="fg"><label>Phone</label><input id="l-phone" type="tel" placeholder="(555) 000-0000"></div>
+    <div class="fg"><label>Email</label><input id="l-email" type="email" placeholder="email@example.com"></div>
+    <div class="fg"><label>Address</label><input id="l-addr" placeholder="123 Main St, City, NJ 00000"></div>
+    <div class="fg"><label>Utility Provider</label><input id="l-util" placeholder="PSE&G, JCP&L..."></div>
+    <div class="frow">
+      <div class="fg"><label>Monthly Bill ($)</label><input id="l-bill" type="number" placeholder="0"></div>
+      <div class="fg"><label>kWh/Month</label><input id="l-kwh" type="number" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>Status</label><select id="l-status"><option value="hot">Hot</option><option value="warm" selected>Warm</option><option value="cold">Cold</option></select></div>
+    <div class="frow">
+      <div class="fg"><label>Date Met</label><input id="l-date" type="date"></div>
+      <div class="fg"><label>Follow-Up Date</label><input id="l-followup" type="date"></div>
+    </div>
+    <div class="fg"><label>Notes</label><textarea id="l-notes" placeholder="Roof, shading, objections..."></textarea></div>
+    <button class="mbtn gold" onclick="saveLead()">Save Lead</button>
+    <button class="mbtn ghost" onclick="closeModal('lead-modal')">Cancel</button>
+  </div>
+</div>
+
+<!-- APPT MODAL -->
+
+<div class="overlay" id="appt-modal">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">New Appointment</div><button class="modal-x" onclick="closeModal('appt-modal')">×</button></div>
+    <div class="fg"><label>Name</label><input id="a-name" placeholder="Contact name"></div>
+    <div class="fg"><label>Phone</label><input id="a-phone" type="tel" placeholder="(555) 000-0000"></div>
+    <div class="fg"><label>Address</label><input id="a-addr" placeholder="123 Main St, City, NJ"></div>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input id="a-date" type="date"></div>
+      <div class="fg"><label>Time</label><input id="a-time" type="time"></div>
+    </div>
+    <div class="fg"><label>Notes</label><textarea id="a-notes" placeholder="Details..."></textarea></div>
+    <div class="fg">
+      <label>Color</label>
+      <div class="color-picks">
+        <div class="cpick on" style="background:var(--hot)" data-c="hot" onclick="pickColor('hot')"></div>
+        <div class="cpick" style="background:var(--warm)" data-c="warm" onclick="pickColor('warm')"></div>
+        <div class="cpick" style="background:var(--conf)" data-c="conf" onclick="pickColor('conf')"></div>
+        <div class="cpick" style="background:var(--cold)" data-c="cold" onclick="pickColor('cold')"></div>
+        <div class="cpick" style="background:var(--fup)" data-c="fup" onclick="pickColor('fup')"></div>
+      </div>
+      <div style="font-size:7px;color:var(--text3);margin-top:5px">Red=Hot · Orange=Warm · Green=Confirmed · Blue=Follow-Up · Purple=Other</div>
+    </div>
+    <button class="mbtn gold" onclick="saveAppt()">Save Appointment</button>
+    <button class="mbtn ghost" onclick="closeModal('appt-modal')">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────
+const DB={g:k=>{try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},s:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+let sessions=DB.g('s_sess')||[];
+let leads=DB.g('s_leads')||[];
+let appts=DB.g('s_appts')||[];
+let mGoals=DB.g('s_goals')||{};
+let scriptTxt=DB.g('s_script')||DEFAULT_SCRIPT();
+let ticker=DB.g('s_tick')||{doors:0,talks:0,leads:0,sits:0,sales:0,date:td()};
+if(ticker.date!==td()){ticker={doors:0,talks:0,leads:0,sits:0,sales:0,date:td()};DB.s('s_tick',ticker);}
+
+let curPage='today',selLead=null,leadFilter='all',leadTab='leads',apptColor='hot',apptDay=td(),calSelDay=null,quoteIdx=0;
+
+function persist(){DB.s('s_sess',sessions);DB.s('s_leads',leads);DB.s('s_appts',appts);DB.s('s_goals',mGoals);}
+function saveTick(){DB.s('s_tick',ticker);}
+function td(){return new Date().toISOString().split('T')[0];}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function fmtD(d){if(!d)return'';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});}
+function fmtS(d){if(!d)return'';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+function fmtT(t){if(!t)return'';const[h,m]=t.split(':');const hr=+h;return(hr%12||12)+':'+m+' '+(hr>=12?'PM':'AM');}
+function ago(n){const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0];}
+function scColor(s){return s==='hot'?'var(--hot)':s==='warm'?'var(--warm)':s==='cold'?'var(--cold)':s==='conf'?'var(--conf)':'var(--fup)';}
+
+function DEFAULT_SCRIPT(){return`Hey —\n\nI'm Robby with SunnyMac. We're the ones following up with the net metering program.\n\nI don't do this full time — I'm an English teacher but they're not paying me enough.\n\nYou the property owner?\n\nOk, I'll be real short.\n\nBasically — you probably know everything costs six billion dollars now, and you're probably paying like $200 a month for electricity because the rates are so high.\n\nBut —\n\nIf you look at PSEG's map here, where it's all green...\n\nThe electric company is telling you: if you put those solar panels on your roof — which lowers your monthly bill by about 60 percent — they'll let you do it for no money out of pocket.\n\nSo if you're paying $250 a month like Kathy Roberts the town over... your bill goes down to around $100. You just swap it out.\n\nThat's the trade-off. And that's why you see everyone putting them up — because it lowers your monthly bill by sixty percent.`;}
+
+const QUOTES=[
+  {t:"Whoever has the most conversations wins.",a:"Alex Hormozi"},
+  {t:"Every no gets me closer to a yes.",a:"Sales Axiom"},
+  {t:"Don't wish it were easier. Wish you were better.",a:"Jim Rohn"},
+  {t:"You miss 100% of the shots you don't take.",a:"Wayne Gretzky"},
+  {t:"The harder I work, the luckier I get.",a:"Samuel Goldwyn"},
+  {t:"Your income is a direct reflection of the value you provide.",a:"Alex Hormozi"},
+  {t:"Every door knocked is a door closer to financial freedom.",a:"Field Wisdom"},
+  {t:"The more people you help get what they want, the more you get what you want.",a:"Zig Ziglar"},
+  {t:"You are the average of the five people you spend the most time with.",a:"Jim Rohn"},
+  {t:"Success is going from failure to failure without losing your enthusiasm.",a:"Winston Churchill"},
+  {t:"The secret to getting ahead is getting started.",a:"Mark Twain"},
+  {t:"A goal without a plan is just a wish.",a:"Antoine de Saint-Exupery"},
+  {t:"Do not wait. The time will never be just right.",a:"Napoleon Hill"},
+  {t:"Rich people have large libraries. Poor people have large TV sets.",a:"Jim Rohn"},
+  {t:"Discipline is the bridge between goals and accomplishment.",a:"Jim Rohn"},
+  {t:"Suffer the pain of discipline or suffer the pain of regret.",a:"Jim Rohn"},
+  {t:"Be so good they can't ignore you.",a:"Steve Martin"},
+  {t:"You don't need more time. You need more focus.",a:"Alex Hormozi"},
+  {t:"Hustle in silence and let your success make the noise.",a:"Anonymous"},
+  {t:"You didn't come this far to only come this far.",a:"Anonymous"},
+  {t:"Winners are not people who never fail. They are people who never quit.",a:"Anonymous"},
+  {t:"Fall seven times, stand up eight.",a:"Japanese Proverb"},
+  {t:"Consistency is more important than perfection.",a:"Anonymous"},
+  {t:"The man on top of the mountain didn't fall there.",a:"Vince Lombardi"},
+  {t:"Press on. Nothing can take the place of persistence.",a:"Calvin Coolidge"},
+  {t:"The best revenge is massive success.",a:"Frank Sinatra"},
+  {t:"It always seems impossible until it's done.",a:"Nelson Mandela"},
+  {t:"If you're going through hell, keep going.",a:"Winston Churchill"},
+  {t:"Don't count the days. Make the days count.",a:"Muhammad Ali"},
+  {t:"Champions are made from something deep inside them.",a:"Muhammad Ali"},
+  {t:"I've missed more than 9000 shots. That's why I succeed.",a:"Michael Jordan"},
+  {t:"The only way to do great work is to love what you do.",a:"Steve Jobs"},
+  {t:"Your time is limited. Don't waste it living someone else's life.",a:"Steve Jobs"},
+  {t:"The question isn't who is going to let me. It's who is going to stop me.",a:"Ayn Rand"},
+  {t:"Definiteness of purpose is the starting point of all achievement.",a:"W. Clement Stone"},
+  {t:"People who succeed have momentum. The more they succeed, the more they want to succeed.",a:"Darren Hardy"},
+  {t:"Eighty percent of success is showing up.",a:"Woody Allen"},
+  {t:"The most difficult thing is the decision to act. The rest is tenacity.",a:"Amelia Earhart"},
+  {t:"Too many of us are not living our dreams because we are living our fears.",a:"Les Brown"},
+  {t:"A person who never made a mistake never tried anything new.",a:"Albert Einstein"},
+  {t:"In the middle of difficulty lies opportunity.",a:"Albert Einstein"},
+  {t:"Energy and persistence conquer all things.",a:"Benjamin Franklin"},
+  {t:"The only limit to our realization of tomorrow is our doubts of today.",a:"Franklin D. Roosevelt"},
+  {t:"It's not whether you get knocked down. It's whether you get up.",a:"Vince Lombardi"},
+  {t:"Excellence is not a destination. It is a continuous journey that never ends.",a:"Brian Tracy"},
+  {t:"Activity breeds results. Sit around waiting and they won't come.",a:"Brian Tracy"},
+  {t:"Some people dream of success. Others get up every morning and make it happen.",a:"Wayne Huizenga"},
+  {t:"We become what we think about.",a:"Earl Nightingale"},
+  {t:"Success is not in what you have, but who you are.",a:"Bo Bennett"},
+  {t:"The successful warrior is the average man with laser-like focus.",a:"Bruce Lee"},
+  {t:"Whether you think you can or you think you can't, you're right.",a:"Henry Ford"},
+  {t:"The people crazy enough to think they can change the world are the ones who do.",a:"Steve Jobs"},
+  {t:"The richest people look for and build networks. Everyone else looks for work.",a:"Robert Kiyosaki"},
+  {t:"Your future is created by what you do today, not tomorrow.",a:"Robert Kiyosaki"},
+  {t:"Motivation is what gets you started. Habit is what keeps you going.",a:"Jim Ryun"},
+  {t:"I never dreamed about success. I worked for it.",a:"Estee Lauder"},
+  {t:"The difference between ordinary and extraordinary is that little extra.",a:"Jimmy Johnson"},
+  {t:"Dream big. Start small. But most of all, start.",a:"Simon Sinek"},
+  {t:"Opportunities don't happen. You create them.",a:"Chris Grosser"},
+  {t:"If you genuinely care about the goal, you'll find a way.",a:"Alex Hormozi"},
+  {t:"Sales are contingent upon the attitude of the salesman, not the prospect.",a:"W. Clement Stone"},
+  {t:"Make a customer, not a sale.",a:"Katherine Barchetti"},
+  {t:"Expect the best. Prepare for the worst. Capitalize on what comes.",a:"Zig Ziglar"},
+  {t:"You don't close a sale, you open a relationship.",a:"Patricia Fripp"},
+  {t:"Every sale has five obstacles: no need, no money, no hurry, no desire, no trust.",a:"Zig Ziglar"},
+  {t:"If you can dream it, you can achieve it.",a:"Zig Ziglar"},
+  {t:"You don't have to be great to start, but you have to start to be great.",a:"Zig Ziglar"},
+  {t:"The mind is everything. What you think, you become.",a:"Buddha"},
+  {t:"Believe you can and you're halfway there.",a:"Theodore Roosevelt"},
+  {t:"Do what you can, where you are, with what you have.",a:"Theodore Roosevelt"},
+  {t:"The only way out is through.",a:"Robert Frost"},
+  {t:"Twenty years from now you'll be more disappointed by what you didn't do.",a:"Mark Twain"},
+  {t:"Courage is resistance to fear, mastery of fear — not absence of fear.",a:"Mark Twain"},
+  {t:"Well done is better than well said.",a:"Benjamin Franklin"},
+  {t:"An investment in knowledge pays the best interest.",a:"Benjamin Edison"},
+  {t:"I have not failed. I've found 10,000 ways that won't work.",a:"Thomas Edison"},
+  {t:"Genius is one percent inspiration and ninety-nine percent perspiration.",a:"Thomas Edison"},
+  {t:"Life is 10% what happens to you and 90% how you react to it.",a:"Charles R. Swindoll"},
+  {t:"Your habits will determine your future.",a:"Jack Canfield"},
+  {t:"Stop managing your time. Start managing your energy.",a:"Tony Schwartz"},
+  {t:"Set a goal that makes you want to jump out of bed in the morning.",a:"Anonymous"},
+  {t:"Work until your bank account looks like a phone number.",a:"Anonymous"},
+  {t:"Never let the fear of striking out keep you from playing the game.",a:"Babe Ruth"},
+  {t:"Risk more than others think is safe. Dream more than others think is practical.",a:"Howard Schultz"},
+  {t:"Most people overestimate what they can do in a year and underestimate what they can do in ten.",a:"Bill Gates"},
+  {t:"The longer you wait for the future, the shorter it will be.",a:"Loesje"},
+  {t:"Nobody who ever gave their best regretted it.",a:"George Halas"},
+  {t:"The best salespeople are listeners, not talkers.",a:"Sales Wisdom"},
+  {t:"You become what you believe.",a:"Oprah Winfrey"},
+  {t:"The secret of change is to focus all energy on building the new.",a:"Socrates"},
+  {t:"Great minds discuss ideas. Average minds discuss events. Small minds discuss people.",a:"Eleanor Roosevelt"},
+  {t:"Do or do not. There is no try.",a:"Yoda"},
+  {t:"I attribute my success to this — I never gave or took any excuse.",a:"Florence Nightingale"},
+  {t:"You miss every shot you don't take.",a:"Wayne Gretzky"},
+  {t:"Success is not final. Failure is not fatal. It is the courage to continue that counts.",a:"Winston Churchill"},
+  {t:"Make your work to be in keeping with your purpose.",a:"Leonardo da Vinci"},
+  {t:"The road to success and the road to failure are almost exactly the same.",a:"Colin R. Davis"},
+  {t:"It's not about having the right opportunities. It's about handling opportunities right.",a:"Mark Hunter"},
+  {t:"You were born to win, but to be a winner you must plan to win and expect to win.",a:"Zig Ziglar"},
+];
+
+// ── WEATHER ─────────────────────────────────────────────────────
+function loadWeather(){
+  if(!navigator.geolocation){setSBWeather('—°','No location');return;}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try{
+      const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&temperature_unit=fahrenheit`);
+      const d=await r.json();
+      const t=Math.round(d.current_weather.temperature);
+      const c=d.current_weather.weathercode;
+      const icon=c===0?'☀️':c<=2?'⛅':c===3?'☁️':c<=49?'🌫️':c<=69?'🌧️':c<=79?'❄️':'⛈️';
+      const desc=c===0?'Clear Sky':c<=2?'Partly Cloudy':c===3?'Overcast':c<=49?'Foggy':c<=69?'Rainy':c<=79?'Snowy':'Stormy';
+      setSBWeather(t+'°F '+icon,desc);
+    }catch{setSBWeather('—°','Unavailable');}
+  },()=>setSBWeather('—°','Unavailable'),{timeout:6000});
+}
+function setSBWeather(val,desc){
+  document.getElementById('sb-weather').innerHTML=`<div class="sb-weather-val">${val}</div><div class="sb-weather-desc">${desc}</div>`;
+}
+
+// ── SIDEBAR ──────────────────────────────────────────────────────
+function updateSidebar(){
+  document.getElementById('sb-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const hot=leads.filter(l=>l.status==='hot').length;
+  document.getElementById('sb-stats').innerHTML=
+    sb_stat(ticker.doors,'Doors')+sb_stat(leads.length,'Leads',true)+
+    sb_stat(ticker.talks,'Talks')+sb_stat(hot,'Hot',true);
+  const todayA=appts.filter(a=>a.date===td()).length;
+  document.getElementById('appt-badge').textContent=todayA||'0';
+  renderQuote();
+}
+function sb_stat(v,l,g){return`<div class="sb-stat" onclick="go('field')"><div class="sb-stat-val${g?' g':''}">${v}</div><div class="sb-stat-lbl">${l}</div></div>`;}
+
+function renderQuote(){
+  const q=QUOTES[quoteIdx];
+  document.getElementById('sb-quote').innerHTML=`<div class="sb-quote-text">"${q.t}"</div><div class="sb-quote-attr">— ${q.a}</div>`;
+}
+function nextQuote(){
+  quoteIdx=(quoteIdx+1)%QUOTES.length;
+  renderQuote();
+  // also update quote card if on today page
+  const qc=document.getElementById('quote-card');
+  if(qc){const q=QUOTES[quoteIdx];qc.querySelector('.manifest-text').textContent=`"${q.t}"`;qc.querySelector('.manifest-attr').textContent=`— ${q.a}`;}
+}
+
+// ── NAV ──────────────────────────────────────────────────────────
+const PAGE_CFG={
+  today:{title:'Today',pri:'+ Lead',fn:()=>openLeadModal()},
+  field:{title:'Field & Leads',pri:'+ Lead',fn:()=>openLeadModal()},
+  calendar:{title:'Calendar',pri:'Log Session',fn:()=>openSessionModal()},
+  appt:{title:'Appointments',pri:'+ Appointment',fn:()=>openApptModal()},
+  script:{title:'My Script',pri:'Save Script',fn:()=>saveScript()},
+};
+
+function go(page){
+  curPage=page;
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('ni-'+page).classList.add('on');
+  document.getElementById('topbar-title').textContent=PAGE_CFG[page].title;
+  document.getElementById('topbar-pri').textContent=PAGE_CFG[page].pri;
+  updateSidebar();
+  ({today:renderToday,field:renderField,calendar:renderCalendar,appt:renderAppt,script:renderScript})[page]();
+}
+function topPri(){PAGE_CFG[curPage].fn();}
+
+// ── TODAY ────────────────────────────────────────────────────────
+function renderToday(){
+  const today=td();
+  const q=QUOTES[quoteIdx];
+  const todayFollowups=leads.filter(l=>l.followup===today);
+  const todayApptsList=appts.filter(a=>a.date===today).sort((a,b)=>a.time.localeCompare(b.time));
+  const recent=[...leads].sort((a,b)=>b.ts-a.ts).slice(0,3);
+  const past7=[];
+  for(let i=1;i<=7;i++){
+    const dStr=ago(i);
+    const sess=sessions.filter(s=>s.date===dStr);
+    if(!sess.length)continue;
+    const label=i===1?'Yesterday':new Date(dStr+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    past7.push({label,doors:sess.reduce((a,s)=>a+(+s.doors||0),0),talks:sess.reduce((a,s)=>a+(+s.ho||0),0),sales:sess.reduce((a,s)=>a+(+s.sales||0),0)});
+  }
+
+  let html=`
+  <div style="margin:16px 16px 0;border:1px solid var(--line);border-radius:2px;background:var(--bg2);padding:16px 18px;">
+    <div style="font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Daily Overview</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--text);margin-bottom:14px">
+      ${new Date().toLocaleDateString('en-US',{weekday:'long'})}, <em style="color:var(--gold)">${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric'})}</em>
+    </div>
+    <div style="display:flex;padding-top:12px;border-top:1px solid var(--line)">
+      ${[['doors','Doors'],['talks','Talks'],['leads','Leads',true],['sits','Sits'],['sales','Sales']].map(([k,l,g])=>`
+        <div style="flex:1;${l!=='Sales'?'border-right:1px solid var(--line);padding-right:12px;margin-right:12px':''}">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:-2px;color:${g?'var(--gold)':'var(--text)'};line-height:1">${ticker[k]}</div>
+          <div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:3px">${l}</div>
+        </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:7px;margin-top:12px">
+      <button class="tbtn gold" onclick="go('field')">Open Ticker</button>
+      <button class="tbtn" onclick="openLeadModal()">+ New Lead</button>
+      <button class="tbtn" onclick="go('appt')">Appointments</button>
+    </div>
+  </div>`;
+
+  if(todayFollowups.length){
+    html+=`<div class="card"><div class="card-lbl" style="color:var(--hot)">🔔 Follow-Ups Due Today</div>
+    ${todayFollowups.map(l=>`<div onclick="selLead('${l.id}');go('field')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer">
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--text)">${l.name}</div>${l.phone?`<div style="font-size:9px;color:var(--gold)">${l.phone}</div>`:''}</div>
+      <div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:${scColor(l.status)}">${l.status}</div>
+    </div>`).join('')}</div>`;
+  }
+
+  if(todayApptsList.length){
+    html+=`<div class="card"><div class="card-lbl">📅 Today's Appointments</div>
+    ${todayApptsList.map(a=>`<div onclick="go('appt')" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);cursor:pointer">
+      <div style="width:4px;height:34px;border-radius:2px;background:${scColor(a.color)};flex-shrink:0"></div>
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--text)">${a.name}</div>
+      <div style="font-size:7px;color:var(--text3)">${fmtT(a.time)}${a.addr?' · '+a.addr:''}</div></div>
+    </div>`).join('')}</div>`;
+  }
+
+  html+=`<div class="card" id="quote-card" onclick="nextQuote()" style="border-color:rgba(201,150,58,0.15);cursor:pointer">
+    <div style="font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:7px">Manifesting Wealth — tap for next</div>
+    <div class="manifest-text" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;font-weight:300;color:var(--text);line-height:1.6">"${q.t}"</div>
+    <div class="manifest-attr" style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:7px">— ${q.a}</div>
+  </div>`;
+
+  if(past7.length){
+    html+=`<div class="card"><div class="card-lbl">Past 7 Days</div>
+    ${past7.map((d,i)=>`<div style="display:flex;align-items:baseline;gap:14px;padding-bottom:8px;margin-bottom:8px;border-bottom:${i<past7.length-1?'1px solid var(--line)':'none'}">
+      <div style="font-size:7px;color:var(--text3);width:68px;flex-shrink:0">${d.label}</div>
+      ${[['Doors',d.doors],['Talks',d.talks],['Sales',d.sales]].map(([l,v])=>`<div><span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--text)">${v}</span><span style="font-size:7px;color:var(--text3);margin-left:3px">${l}</span></div>`).join('')}
+    </div>`).join('')}</div>`;
+  }
+
+  if(recent.length){
+    html+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 16px 22px">
+    ${recent.map(l=>`<div onclick="selLead('${l.id}');go('field')" style="background:var(--bg2);border:1px solid var(--line);border-top:2px solid ${scColor(l.status)};border-radius:2px;padding:10px;cursor:pointer">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.name}</div>
+      <div style="font-size:7px;color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.addr||'No address'}</div>
+      <div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:${scColor(l.status)};margin-top:5px">${l.status}</div>
+    </div>`).join('')}</div>`;
+  } else html+=`<div style="height:20px"></div>`;
+
+  document.getElementById('page').innerHTML=html;
+}
+
+// ── FIELD ────────────────────────────────────────────────────────
+const FIELDS=[{k:'doors',l:'Doors'},{k:'talks',l:'Talks'},{k:'leads',l:'Leads'},{k:'sits',l:'Sits'},{k:'sales',l:'Sales'}];
+const LTABS=[{id:'leads',l:'Leads'},{id:'yesterday',l:'Yesterday'},{id:'7days',l:'7 Days'},{id:'14days',l:'14 Days'},{id:'lastmonth',l:'Last Month'},{id:'alltime',l:'All Time'}];
+
+function renderField(){
+  document.getElementById('page').innerHTML=`
+  <div class="ticker-shell">
+    <div class="ticker-left">
+      <div class="ticker-hdr">
+        <span style="font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)">Live Count</span>
+        <button onclick="resetTicker()" style="background:none;border:none;color:var(--hot);font-size:7px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Mono',monospace">Reset</button>
+      </div>
+      <div class="ticker-rows">
+        ${FIELDS.map(f=>`<div class="ticker-row">
+          <div style="flex:1"><div class="ticker-lbl">${f.l}</div><div class="ticker-val" id="tv-${f.k}">${ticker[f.k]}</div></div>
+          <div class="ticker-btns">
+            <button class="tbtn2" onclick="tick('${f.k}',1)">+</button>
+            <button class="tbtn2" onclick="tick('${f.k}',-1)" style="color:var(--text3)">−</button>
+          </div>
+        </div>`).join('')}
+      </div>
+      <div class="ticker-foot"><button class="save-log-btn" onclick="saveToLog()">Save to Log</button></div>
+    </div>
+    <div class="leads-right">
+      <div class="leads-tabs">${LTABS.map(t=>`<button class="ltab${leadTab===t.id?' on':''}" onclick="setLeadTab('${t.id}')">${t.l}</button>`).join('')}</div>
+      <div id="leads-tab-body" style="flex:1;display:flex;flex-direction:column;overflow:hidden">${buildLeadTab()}</div>
+    </div>
+  </div>`;
+}
+
+function tick(k,d){ticker[k]=Math.max(0,(ticker[k]||0)+d);saveTick();updateSidebar();const el=document.getElementById('tv-'+k);if(el)el.textContent=ticker[k];}
+function resetTicker(){if(!confirm('Reset all counts?'))return;FIELDS.forEach(f=>ticker[f.k]=0);saveTick();renderField();updateSidebar();}
+function saveToLog(){sessions.push({id:uid(),date:td(),doors:ticker.doors,ho:ticker.talks,leads_n:ticker.leads,sits:ticker.sits,sales:ticker.sales,notes:'From ticker',ts:Date.now()});persist();toast('Session saved!');}
+function setLeadTab(t){leadTab=t;const el=document.getElementById('leads-tab-body');if(el)el.innerHTML=buildLeadTab();document.querySelectorAll('.ltab').forEach(b=>b.classList.toggle('on',b.textContent.trim()===LTABS.find(x=>x.id===t)?.l));}
+
+function buildLeadTab(){
+  if(leadTab==='leads') return buildLeadsPanel();
+  if(leadTab==='alltime') return buildAllTime();
+  if(leadTab==='lastmonth') return buildLastMonth();
+  const days=leadTab==='yesterday'?1:leadTab==='7days'?7:14;
+  return buildHistDays(days);
+}
+
+function buildLeadsPanel(){
+  const fl=leadFilter==='all'?leads:leads.filter(l=>l.status===leadFilter);
+  const sl=[...fl].sort((a,b)=>{const o={hot:0,warm:1,cold:2};return(o[a.status]-o[b.status])||b.ts-a.ts;});
+  const sel=selLead?leads.find(l=>l.id===selLead):null;
+  return `<div class="filter-row">${['all','hot','warm','cold'].map(f=>`<div class="fp${leadFilter===f?' on':''}" onclick="setFilter('${f}')">${f==='all'?'All':f.charAt(0).toUpperCase()+f.slice(1)} ${f==='all'?leads.length:leads.filter(l=>l.status===f).length}</div>`).join('')}</div>
+  <div class="leads-body">
+    <div class="lead-list">
+      <div style="flex:1;overflow-y:auto">
+        ${sl.length?sl.map(l=>`<div class="lli${selLead===l.id?' on':''}" onclick="selLead('${l.id}')" style="border-left-color:${scColor(l.status)}">
+          <div class="lli-name">${l.name}</div>
+          <div class="lli-sub">${l.addr||'No address'}</div>
+          <div class="lli-st" style="color:${scColor(l.status)}">${l.status.toUpperCase()}</div>
+        </div>`).join(''):'<div style="padding:20px;text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--text3);font-size:14px">No leads yet</div>'}
+      </div>
+      <div class="add-lead-bar"><button class="add-lead-btn" onclick="openLeadModal()">+ New Lead</button></div>
+    </div>
+    <div class="lead-detail">${sel?buildLD(sel):'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--text3);font-size:16px">Select a lead</div>'}</div>
+  </div>`;
+}
+
+function buildLD(l){
+  const mapSrc=l.addr?`https://maps.google.com/maps?q=${encodeURIComponent(l.addr)}&output=embed`:'';
+  return `<div class="ld-name">${l.name}</div>
+  <div class="ld-date">${fmtD(l.date)}</div>
+  <div class="ld-badge" style="color:${scColor(l.status)};border-color:${scColor(l.status)}55">${l.status.toUpperCase()}</div>
+  ${l.phone?`<div class="ld-sec"><div class="ld-sec-lbl">Phone</div><div class="ld-val phone">${l.phone}</div></div>`:''}
+  ${l.email?`<div class="ld-sec"><div class="ld-sec-lbl">Email</div><div class="ld-val" style="color:var(--gold)">${l.email}</div></div>`:''}
+  ${l.addr?`<div class="ld-sec"><div class="ld-sec-lbl">Address</div><div class="ld-val">${l.addr}</div></div>`:''}
+  ${(l.util||l.bill)?`<div class="ld-sec"><div class="ld-sec-lbl">Details</div><div class="ld-val">${l.util||''}${l.bill?' · $'+l.bill+'/mo':''}${l.kwh?' · '+l.kwh+' kWh':''}</div></div>`:''}
+  ${l.followup?`<div class="ld-sec"><div class="ld-sec-lbl">Follow-Up</div><div class="ld-val" style="color:var(--gold)">${fmtD(l.followup)}</div></div>`:''}
+  ${l.notes?`<div class="ld-sec"><div class="ld-sec-lbl">Notes</div><div class="ld-notes">${l.notes}</div></div>`:''}
+  ${mapSrc?`<div class="ld-sec"><div class="ld-sec-lbl">Map</div><iframe class="ld-map" src="${mapSrc}" frameborder="0" loading="lazy" allowfullscreen></iframe></div>`:''}
+  <div class="ld-actions">
+    ${l.addr?`<a href="https://maps.google.com/?q=${encodeURIComponent(l.addr)}" target="_blank" class="ld-btn maps">Google Maps</a>`:''}
+    <button class="ld-btn" onclick="openLeadModal('${l.id}')">Edit</button>
+    <button class="ld-btn del" onclick="deleteLead('${l.id}')">Delete</button>
+  </div>`;
+}
+
+function buildHistDays(days){
+  let html='<div style="flex:1;overflow-y:auto">';let found=false;
+  for(let i=1;i<=days;i++){
+    const dStr=ago(i);
+    const sess=sessions.filter(s=>s.date===dStr);
+    const dl=leads.filter(l=>l.date===dStr);
+    if(!sess.length&&!dl.length)continue;found=true;
+    const label=i===1?'Yesterday':new Date(dStr+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+    html+=`<div class="hist-day"><div class="hist-lbl">${label}</div>
+    ${sess.length?`<div class="hist-stats">${[['Doors',sess.reduce((a,s)=>a+(+s.doors||0),0)],['Talks',sess.reduce((a,s)=>a+(+s.ho||0),0)],['Sits',sess.reduce((a,s)=>a+(+s.sits||0),0)],['Sales',sess.reduce((a,s)=>a+(+s.sales||0),0)]].map(([l,v])=>`<div><div class="hv">${v}</div><div class="hl">${l}</div></div>`).join('')}</div>`:''}
+    ${dl.length?`<div style="margin-top:8px">${dl.map(l=>`<div onclick="selLead('${l.id}');setLeadTab('leads')" style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line);cursor:pointer"><div style="font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--text)">${l.name}</div><div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:${scColor(l.status)}">${l.status}</div></div>`).join('')}</div>`:''}</div>`;
+  }
+  if(!found)html+=`<div style="padding:28px;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text3);font-size:15px">No data for this period</div>`;
+  return html+'</div>';
+}
+
+function buildLastMonth(){
+  const now=new Date();const lmY=now.getMonth()===0?now.getFullYear()-1:now.getFullYear();const lmM=now.getMonth()===0?11:now.getMonth()-1;
+  const lmStr=lmY+'-'+String(lmM+1).padStart(2,'0');const mName=new Date(lmY,lmM,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const mS=sessions.filter(s=>s.date.startsWith(lmStr));const mL=leads.filter(l=>l.date&&l.date.startsWith(lmStr));
+  if(!mS.length&&!mL.length)return`<div style="padding:28px;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text3);font-size:15px">No data for ${mName}</div>`;
+  return`<div style="flex:1;overflow-y:auto">
+    <div class="hist-day" style="background:var(--bg3)"><div class="hist-lbl" style="color:var(--gold)">${mName} — Summary</div>
+    <div class="hist-stats">${[['Doors',mS.reduce((a,s)=>a+(+s.doors||0),0)],['Talks',mS.reduce((a,s)=>a+(+s.ho||0),0)],['Leads',mL.length],['Sales',mS.reduce((a,s)=>a+(+s.sales||0),0)]].map(([l,v])=>`<div><div class="hv">${v}</div><div class="hl">${l}</div></div>`).join('')}</div></div>
+    ${mL.sort((a,b)=>{const o={hot:0,warm:1,cold:2};return o[a.status]-o[b.status];}).map(l=>`<div onclick="selLead('${l.id}');setLeadTab('leads')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer">
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--text)">${l.name}</div>${l.addr?`<div style="font-size:7px;color:var(--text3)">${l.addr}</div>`:''}</div>
+      <div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:${scColor(l.status)}">${l.status}</div>
+    </div>`).join('')}</div>`;
+}
+
+function buildAllTime(){
+  const fl=leadFilter==='all'?leads:leads.filter(l=>l.status===leadFilter);
+  const sl=[...fl].sort((a,b)=>{const o={hot:0,warm:1,cold:2};return(o[a.status]-o[b.status])||b.ts-a.ts;});
+  return`<div style="flex:1;overflow-y:auto">
+    <div class="hist-day" style="background:var(--bg3)"><div class="hist-lbl" style="color:var(--gold)">All Time</div>
+    <div class="hist-stats">${[['Doors',sessions.reduce((a,s)=>a+(+s.doors||0),0)],['Leads',leads.length],['Sales',sessions.reduce((a,s)=>a+(+s.sales||0),0)]].map(([l,v])=>`<div><div class="hv">${v}</div><div class="hl">${l}</div></div>`).join('')}</div></div>
+    <div class="filter-row">${['all','hot','warm','cold'].map(f=>`<div class="fp${leadFilter===f?' on':''}" onclick="setFilter('${f}');setLeadTab('alltime')">${f==='all'?'All':f.charAt(0).toUpperCase()+f.slice(1)} ${f==='all'?leads.length:leads.filter(l=>l.status===f).length}</div>`).join('')}</div>
+    ${sl.map(l=>`<div onclick="selLead('${l.id}');setLeadTab('leads')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer">
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--text)">${l.name}</div>
+      ${l.phone?`<div style="font-size:9px;color:var(--gold)">${l.phone}</div>`:''}
+      ${l.addr?`<div style="font-size:7px;color:var(--text3)">${l.addr}</div>`:''}
+      ${l.date?`<div style="font-size:7px;color:var(--text3)">${fmtS(l.date)}</div>`:''}</div>
+      <div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:${scColor(l.status)}">${l.status}</div>
+    </div>`).join('')}</div>`;
+}
+
+function setFilter(f){leadFilter=f;const el=document.getElementById('leads-tab-body');if(el)el.innerHTML=buildLeadTab();}
+function selLead(id){selLead_id=id;window.selLead_last=id;if(curPage==='field'){leadTab='leads';renderField();}}
+// override selLead to use closure
+window.selLead=function(id){selLead=id;if(curPage==='field'){leadTab='leads';renderField();}}
+
+// ── LEADS CRUD ───────────────────────────────────────────────────
+function openLeadModal(id){
+  document.getElementById('l-id').value=id||'';
+  document.getElementById('lead-modal-title').textContent=id?'Edit Lead':'New Lead';
+  if(id){const l=leads.find(x=>x.id===id);if(!l)return;
+    ['name','phone','email','addr','util','bill','kwh','notes'].forEach(k=>{const el=document.getElementById('l-'+k);if(el)el.value=l[k]||'';});
+    document.getElementById('l-status').value=l.status||'warm';
+    document.getElementById('l-date').value=l.date||td();
+    document.getElementById('l-followup').value=l.followup||'';
+  }else{
+    ['name','phone','email','addr','util','bill','kwh','notes','followup'].forEach(k=>{const el=document.getElementById('l-'+k);if(el)el.value='';});
+    document.getElementById('l-status').value='warm';
+    document.getElementById('l-date').value=td();
+  }
+  openModal('lead-modal');
+}
+function saveLead(){
+  const name=document.getElementById('l-name').value.trim();if(!name){toast('Name required');return;}
+  const editId=document.getElementById('l-id').value;
+  const data={name,phone:document.getElementById('l-phone').value,email:document.getElementById('l-email').value,addr:document.getElementById('l-addr').value,util:document.getElementById('l-util').value,bill:document.getElementById('l-bill').value,kwh:document.getElementById('l-kwh').value,status:document.getElementById('l-status').value,date:document.getElementById('l-date').value,followup:document.getElementById('l-followup').value,notes:document.getElementById('l-notes').value};
+  if(editId){leads=leads.map(l=>l.id===editId?{...l,...data}:l);selLead=editId;}
+  else{const nl={...data,id:uid(),ts:Date.now()};leads.push(nl);selLead=nl.id;}
+  persist();closeModal('lead-modal');updateSidebar();
+  if(curPage==='field')renderField();if(curPage==='today')renderToday();
+  toast(editId?'Lead updated':'Lead saved!');
+}
+function deleteLead(id){if(!confirm('Delete this lead?'))return;leads=leads.filter(l=>l.id!==id);selLead=null;persist();updateSidebar();if(curPage==='field')renderField();}
+
+// ── SESSION MODAL (simple inline for now) ────────────────────────
+function openSessionModal(){
+  const date=prompt('Date (YYYY-MM-DD):',td());if(!date)return;
+  const doors=+prompt('Doors:',0)||0;const ho=+prompt('Talks:',0)||0;
+  const sits=+prompt('Sits:',0)||0;const sales=+prompt('Sales:',0)||0;
+  const area=prompt('Area:','')||'';const notes=prompt('Notes:','')||'';
+  sessions.push({id:uid(),date,doors,ho,sits,sales,area,notes,ts:Date.now()});
+  persist();if(curPage==='today')renderToday();if(curPage==='calendar')renderCalendar();
+  toast('Session saved!');
+}
+
+// ── CALENDAR ────────────────────────────────────────────────────
+function renderCalendar(){
+  const sessByDate={};sessions.forEach(s=>{if(!sessByDate[s.date])sessByDate[s.date]=[];sessByDate[s.date].push(s);});
+  const months=[];let y=2026,m=3;
+  while(!(y===2028&&m===12)){months.push({y,m});m++;if(m>11){m=0;y++;}}months.push({y:2028,m:11});
+  const DOW=['S','M','T','W','T','F','S'];
+  const todayStr=td();
+
+  let detailHTML='';
+  if(calSelDay){
+    const sess=sessByDate[calSelDay]||[];
+    if(sess.length){
+      const doors=sess.reduce((a,s)=>a+(+s.doors||0),0);const talks=sess.reduce((a,s)=>a+(+s.ho||0),0);
+      const sits=sess.reduce((a,s)=>a+(+s.sits||0),0);const sales=sess.reduce((a,s)=>a+(+s.sales||0),0);
+      const area=sess.map(s=>s.area).filter(Boolean).join(', ');const notes=sess.map(s=>s.notes).filter(Boolean).join(' / ');
+      detailHTML=`<div class="cal-detail-card"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--text);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line)">${fmtD(calSelDay)}</div>
+      ${area?`<div style="font-size:8px;color:var(--text3);margin-bottom:8px">${area}</div>`:''}
+      <div style="display:flex;gap:18px;flex-wrap:wrap">${[['Doors',doors],['Talks',talks],['Sits',sits],['Sales',sales]].map(([l,v])=>`<div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--text);line-height:1">${v}</div><div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:3px">${l}</div></div>`).join('')}</div>
+      ${notes?`<div style="font-size:11px;color:var(--text3);margin-top:8px;font-style:italic">${notes}</div>`:''}</div>`;
+    }
+  }
+
+  const goalsHTML=`<div style="margin-bottom:18px"><div style="font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">Monthly Income Goals</div>
+  <div class="cal-goals-grid">${months.slice(0,12).map(({y,m})=>{const key=y+'-'+String(m+1).padStart(2,'0');const mName=new Date(y,m,1).toLocaleDateString('en-US',{month:'short'});
+    return`<div class="cal-goal-cell"><div class="cal-goal-lbl">${mName} ${y}</div><input class="cal-goal-inp" value="${mGoals[key]||''}" placeholder="$0" oninput="mGoals['${key}']=this.value;DB.s('s_goals',mGoals)"></div>`;
+  }).join('')}</div></div>`;
+
+  const calsHTML=`<div class="cal-grid">${months.map(({y,m})=>{
+    const key=y+'-'+String(m+1).padStart(2,'0');
+    const mName=new Date(y,m,1).toLocaleDateString('en-US',{month:'long'});
+    const dim=new Date(y,m+1,0).getDate();const fdow=new Date(y,m,1).getDay();
+    let cells='';for(let i=0;i<fdow;i++)cells+='<div class="cal-day"></div>';
+    for(let d=1;d<=dim;d++){const dStr=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const has=(sessByDate[dStr]||[]).length>0;const isToday=dStr===todayStr;const isSel=dStr===calSelDay;
+      cells+=`<div class="cal-day${has?' has':''}${isToday?' today':''}${isSel?' sel':''}"${has?` onclick="calClick('${dStr}')"`:''}>${d}${has?'<span class="cal-dot"></span>':''}</div>`;
+    }
+    return`<div class="cal-month"><div class="cal-month-name">${mName} ${y}</div><div class="cal-dow">${DOW.map(d=>`<div class="cal-dow-lbl">${d}</div>`).join('')}</div><div class="cal-days">${cells}</div></div>`;
+  }).join('')}</div>`;
+
+  document.getElementById('page').innerHTML=`<div class="cal-wrap">${goalsHTML}${detailHTML}<div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Tap a gold dot to see session details</div>${calsHTML}</div>`;
+}
+function calClick(dStr){calSelDay=calSelDay===dStr?null:dStr;renderCalendar();setTimeout(()=>{const el=document.querySelector('.cal-detail-card');if(el)el.scrollIntoView({behavior:'smooth'});},50);}
+
+// ── APPOINTMENTS ─────────────────────────────────────────────────
+function renderAppt(){
+  // Build month list Jan 2024 – Dec 2028
+  const months=[];for(let y=2024;y<=2028;y++)for(let m=0;m<12;m++)months.push({y,m});
+  const todayStr=td();
+
+  let leftHTML='';
+  let openMonths=new Set();
+  // auto-open current month
+  const now=new Date();openMonths.add(now.getFullYear()+'-'+now.getMonth());
+
+  leftHTML=months.map(({y,m})=>{
+    const key=y+'-'+m;const mStr=y+'-'+String(m+1).padStart(2,'0');
+    const mName=new Date(y,m,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    const mAppts=appts.filter(a=>a.date.startsWith(mStr));
+    const dim=new Date(y,m+1,0).getDate();
+    let daysHTML='';
+    for(let d=1;d<=dim;d++){
+      const dStr=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const cnt=appts.filter(a=>a.date===dStr).length;
+      const label=new Date(dStr+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',day:'numeric'});
+      daysHTML+=`<div class="appt-day-row${apptDay===dStr?' on':''}" onclick="apptDay='${dStr}';renderAppt()">
+        <div class="appt-day-lbl${apptDay===dStr?' on':''}">${label}</div>
+        ${cnt?`<span class="appt-badge">${cnt}</span>`:''}
+      </div>`;
+    }
+    const isCurrentMonth=y===now.getFullYear()&&m===now.getMonth();
+    return`<div>
+      <div class="appt-month-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span class="appt-month-lbl">${mName}</span>
+        ${mAppts.length?`<span style="font-size:7px;color:var(--gold)">${mAppts.length}</span>`:''}
+      </div>
+      <div style="display:${isCurrentMonth?'block':'none'}">${daysHTML}</div>
+    </div>`;
+  }).join('');
+
+  // Build right panel — time slots
+  const slots=[];for(let h=8;h<=21;h++)for(let mn=0;mn<60;mn+=30)slots.push(String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0'));
+  const dayAppts=appts.filter(a=>a.date===apptDay).sort((a,b)=>a.time.localeCompare(b.time));
+  const dayLabel=new Date(apptDay+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  const slotsHTML=slots.map(slot=>{
+    const sa=dayAppts.filter(a=>a.time===slot);
+    return`<div class="slot-row">
+      <div class="slot-time">${fmtT(slot)}</div>
+      <div class="slot-body">${sa.map(a=>`<div class="appt-block" style="background:${scColor(a.color)}">
+        <div class="appt-block-name">${a.name}</div>
+        ${a.addr?`<div class="appt-block-sub">${a.addr}</div>`:''}
+        ${a.notes?`<div class="appt-block-sub">${a.notes}</div>`:''}
+        <button class="appt-del" onclick="deleteAppt('${a.id}')">×</button>
+      </div>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('page').innerHTML=`
+  <div class="appt-shell">
+    <div class="appt-left">${leftHTML}</div>
+    <div class="appt-right">
+      <div class="appt-right-hdr">
+        <div class="appt-right-title">${dayLabel}</div>
+        <button class="tbtn gold" onclick="openApptModal()">+ Add</button>
+      </div>
+      <div class="appt-slots">${dayAppts.length===0?`<div style="text-align:center;padding:40px;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text3);font-size:16px">No appointments — tap + Add</div>`:''} ${slotsHTML}</div>
+    </div>
+  </div>`;
+}
+
+function openApptModal(){
+  ['a-name','a-phone','a-addr','a-notes'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  document.getElementById('a-date').value=apptDay;
+  document.getElementById('a-time').value='09:00';
+  pickColor('hot');
+  openModal('appt-modal');
+}
+function pickColor(c){apptColor=c;document.querySelectorAll('.cpick').forEach(el=>el.classList.toggle('on',el.dataset.c===c));}
+function saveAppt(){
+  const name=document.getElementById('a-name').value.trim();if(!name){toast('Name required');return;}
+  appts.push({id:uid(),name,phone:document.getElementById('a-phone').value,addr:document.getElementById('a-addr').value,date:document.getElementById('a-date').value,time:document.getElementById('a-time').value,notes:document.getElementById('a-notes').value,color:apptColor,ts:Date.now()});
+  persist();closeModal('appt-modal');updateSidebar();renderAppt();toast('Appointment saved!');
+}
+function deleteAppt(id){if(!confirm('Delete?'))return;appts=appts.filter(a=>a.id!==id);persist();updateSidebar();renderAppt();}
+
+// ── SCRIPT ────────────────────────────────────────────────────────
+function renderScript(){
+  document.getElementById('page').innerHTML=`<div class="script-wrap">
+    <div class="script-hdr"><div class="script-title">My Script</div><button class="script-save" onclick="saveScript()">Save</button></div>
+    <textarea class="script-ta" id="script-ta">${escHtml(scriptTxt)}</textarea>
+
+  </div>`;
+}
+function saveScript(){const ta=document.getElementById('script-ta');if(!ta){toast('Open Script tab');return;}scriptTxt=ta.value;DB.s('s_script',scriptTxt);toast('Script saved!');}
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── MODALS ────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add(‘on’);}
+function closeModal(id){document.getElementById(id).classList.remove(‘on’);}
+document.querySelectorAll(’.overlay’).forEach(o=>o.addEventListener(‘click’,e=>{if(e.target===o)o.classList.remove(‘on’);}));
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg){const t=document.getElementById(‘toast’);t.textContent=msg;t.classList.add(‘show’);setTimeout(()=>t.classList.remove(‘show’),2200);}
+
+// ── INIT ──────────────────────────────────────────────────────────
+loadWeather();
+updateSidebar();
+renderToday();
+</script>
+
+</body>
+</html>
