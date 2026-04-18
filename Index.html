@@ -665,8 +665,6 @@ function buildAllTime(){
     </div>`).join('')}</div>`;
 }
 
-function setFilter(f){leadFilter=f;const el=document.getElementById('leads-tab-body');if(el)el.innerHTML=buildLeadTab();}
-function selLead(id){selLead_id=id;window.selLead_last=id;if(curPage==='field'){leadTab='leads';renderField();}}
 // override selLead to use closure
 window.selLead=function(id){selLead=id;if(curPage==='field'){leadTab='leads';renderField();}}
 
