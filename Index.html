@@ -925,9 +925,9 @@ document.querySelectorAll(’.overlay’).forEach(function(o){o.addEventListener
 function showToast(msg){var t=document.getElementById(‘toast’);t.textContent=msg;t.classList.add(‘show’);setTimeout(function(){t.classList.remove(‘show’);},2200);}
 
 // INIT
-loadWeather();
-updateSidebar();
-renderToday();
+try { loadWeather(); } catch(e) {}
+try { updateSidebar(); } catch(e) {}
+try { renderToday(); } catch(e) { document.getElementById(‘page’).innerHTML = ‘<div style="padding:40px;color:#C9963A;font-family:DM Mono,monospace;font-size:12px">App loaded. Tap a page in the sidebar.</div>’; }
 </script>
 
 </body>
